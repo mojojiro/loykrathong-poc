@@ -23,8 +23,8 @@ export function KrathongCanvas() {
       y: k.y * h,
       vx: (Math.random() - 0.5) * 0.5,
       phase: Math.random() * Math.PI * 2,
-      // 6 = hold ~10s (5 units) + fade ~2s (1 unit) ที่ rate 0.00833/frame@60fps
-      labelAlpha: showLabel ? 6 : 0,
+      // new: 6 = hold 10s + fade 2s | history: 3.5 = hold 5s + fade 2s  (rate 0.00833/frame@60fps)
+      labelAlpha: showLabel ? 6 : 3.5,
     };
   }, []);
 
