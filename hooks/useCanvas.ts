@@ -19,7 +19,7 @@ export function useCanvas(
       const dpr = window.devicePixelRatio || 1;
       canvas.width = canvas.offsetWidth * dpr;
       canvas.height = canvas.offsetHeight * dpr;
-      ctx.scale(dpr, dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();
     window.addEventListener('resize', resize);
@@ -27,7 +27,9 @@ export function useCanvas(
     let raf: number;
     const loop = () => {
       wtRef.current += 0.016;
-      const { width: w, height: h } = canvas;
+      // ใช้ CSS pixels เสมอ — canvas.width เป็น physical pixels (dpr ×)
+      const w = canvas.offsetWidth;
+      const h = canvas.offsetHeight;
 
       drawBackground(ctx, w, h, wtRef.current);
 
