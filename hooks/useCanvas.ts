@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { drawBackground, drawParticle } from '@/lib/krathong';
-import { drawKrathong } from '@/lib/krathong';
+import { drawBackground, drawParticle, drawKrathong, drawKrathongLabel } from '@/lib/krathong';
 import type { KrathongLocal, Particle } from '@/types/krathong';
 
 export function useCanvas(
@@ -47,15 +46,22 @@ export function useCanvas(
 
       drawBackground(ctx, w, h, wtRef.current);
 
+      // update positions
       krathongsRef.current.forEach(k => {
         k.x += k.vx + Math.sin(wtRef.current * 0.7 + k.phase) * 0.25;
         k.y += Math.sin(wtRef.current * 1.1 + k.phase) * 0.5;
         k.vx *= 0.996;
         if (k.x < -70) k.x = w + 70;
         if (k.x > w + 70) k.x = -70;
-        k.labelAlpha = Math.max(0, k.labelAlpha - 0.001);
-        drawKrathong(ctx, k, wtRef.current);
+        k.labelAlpha = Math.max(0, k.labelAlpha - 0.0015);
       });
+
+      // sort by y แล้ว draw body — กระทง y สูง (อยู่หน้า) ทับกระทง y ต่ำ
+      const sorted = [...krathongsRef.current].sort((a, b) => a.y - b.y);
+      sorted.forEach(k => drawKrathong(ctx, k, wtRef.current));
+
+      // draw labels ทีหลังทั้งหมด เพื่อไม่ให้ถูก body ทับ
+      sorted.forEach(k => drawKrathongLabel(ctx, k));
 
       for (let i = particlesRef.current.length - 1; i >= 0; i--) {
         const p = particlesRef.current[i];

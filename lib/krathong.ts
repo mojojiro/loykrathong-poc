@@ -101,21 +101,23 @@ export function drawKrathong(ctx: CanvasRenderingContext2D, k: KrathongLocal, wt
   ctx.beginPath(); ctx.arc(0, -18, 1.6, 0, Math.PI * 2);
   ctx.fillStyle = '#fffaaa'; ctx.fill();
 
-  // Label ชื่อ + ข้อความ
-  if (k.labelAlpha > 0.01) {
-    const label = k.message ? `${k.name} · ${k.message}` : k.name;
-    ctx.font = '500 12px sans-serif';
-    const tw = ctx.measureText(label).width;
-    const bw = tw + 16, bh = 22, bx = -bw / 2, by = -52;
+  ctx.restore();
+}
 
-    ctx.fillStyle = `rgba(10,18,40,${0.75 * k.labelAlpha})`;
-    roundRect(ctx, bx, by, bw, bh, 6); ctx.fill();
+export function drawKrathongLabel(ctx: CanvasRenderingContext2D, k: KrathongLocal) {
+  if (k.labelAlpha <= 0.01) return;
+  const label = k.message ? `${k.name} · ${k.message}` : k.name;
+  ctx.save();
+  ctx.font = '500 12px sans-serif';
+  const tw = ctx.measureText(label).width;
+  const bw = tw + 16, bh = 22, bx = k.x - bw / 2, by = k.y - 52;
 
-    ctx.fillStyle = `rgba(255,255,220,${k.labelAlpha})`;
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(label, 0, by + bh / 2);
-  }
+  ctx.fillStyle = `rgba(10,18,40,${0.75 * k.labelAlpha})`;
+  roundRect(ctx, bx, by, bw, bh, 6); ctx.fill();
 
+  ctx.fillStyle = `rgba(255,255,220,${k.labelAlpha})`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(label, k.x, by + bh / 2);
   ctx.restore();
 }
 

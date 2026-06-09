@@ -2,9 +2,14 @@ import { useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Krathong } from '@/types/krathong';
 
-export function useRealtime(onNewKrathong: (k: Krathong) => void) {
-  const onNewKrathongRef = useRef(onNewKrathong);
-  onNewKrathongRef.current = onNewKrathong;
+export function useRealtime(
+  onNewKrathong: (k: Krathong) => void,
+  onHistoryKrathong: (k: Krathong) => void,
+) {
+  const onNewRef = useRef(onNewKrathong);
+  onNewRef.current = onNewKrathong;
+  const onHistoryRef = useRef(onHistoryKrathong);
+  onHistoryRef.current = onHistoryKrathong;
 
   useEffect(() => {
     let destroyed = false;
@@ -17,7 +22,7 @@ export function useRealtime(onNewKrathong: (k: Krathong) => void) {
         .limit(50)
         .then(({ data }) => {
           if (destroyed) return;
-          data?.reverse().forEach(row => onNewKrathongRef.current(rowToKrathong(row)));
+          data?.reverse().forEach(row => onHistoryRef.current(rowToKrathong(row)));
         });
     };
 
@@ -29,7 +34,7 @@ export function useRealtime(onNewKrathong: (k: Krathong) => void) {
         { event: 'INSERT', schema: 'public', table: 'krathongs' },
         (payload) => {
           if (destroyed) return;
-          onNewKrathongRef.current(rowToKrathong(payload.new as Record<string, unknown>));
+          onNewRef.current(rowToKrathong(payload.new as Record<string, unknown>));
         }
       )
       .subscribe((status) => {

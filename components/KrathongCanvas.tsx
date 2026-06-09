@@ -13,9 +13,8 @@ export function KrathongCanvas() {
   const krathongsRef = useRef<KrathongLocal[]>([]);
   const particlesRef = useRef<Particle[]>([]);
 
-  const toLocal = useCallback((k: Krathong): KrathongLocal => {
+  const toLocal = useCallback((k: Krathong, showLabel: boolean): KrathongLocal => {
     const canvas = canvasRef.current;
-    // ใช้ offsetWidth/offsetHeight (CSS pixels) ไม่ใช่ canvas.width (ที่ขยายตาม dpr แล้ว)
     const w = canvas?.offsetWidth ?? 800;
     const h = canvas?.offsetHeight ?? 500;
     return {
@@ -24,17 +23,23 @@ export function KrathongCanvas() {
       y: k.y * h,
       vx: (Math.random() - 0.5) * 0.5,
       phase: Math.random() * Math.PI * 2,
-      labelAlpha: 1,
+      labelAlpha: showLabel ? 1 : 0,
     };
   }, []);
 
   const onNewKrathong = useCallback((k: Krathong) => {
     if (krathongsRef.current.some(e => e.id === k.id)) return;
-    krathongsRef.current.push(toLocal(k));
+    krathongsRef.current.push(toLocal(k, true));
     if (krathongsRef.current.length > 50) krathongsRef.current.shift();
   }, [toLocal]);
 
-  const { addKrathong } = useRealtime(onNewKrathong);
+  const onHistoryKrathong = useCallback((k: Krathong) => {
+    if (krathongsRef.current.some(e => e.id === k.id)) return;
+    krathongsRef.current.push(toLocal(k, false));
+    if (krathongsRef.current.length > 50) krathongsRef.current.shift();
+  }, [toLocal]);
+
+  const { addKrathong } = useRealtime(onNewKrathong, onHistoryKrathong);
 
   useCanvas(canvasRef, krathongsRef, particlesRef);
 
