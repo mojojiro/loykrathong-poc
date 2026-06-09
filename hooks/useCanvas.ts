@@ -15,10 +15,24 @@ export function useCanvas(
     if (!canvas) return;
     const ctx = canvas.getContext('2d')!;
 
+    let prevW = canvas.offsetWidth || 1;
+    let prevH = canvas.offsetHeight || 1;
+
     const resize = () => {
       const dpr = window.devicePixelRatio || 1;
-      canvas.width = canvas.offsetWidth * dpr;
-      canvas.height = canvas.offsetHeight * dpr;
+      const newW = canvas.offsetWidth;
+      const newH = canvas.offsetHeight;
+
+      // rescale krathong + particle positions ตาม ratio ใหม่
+      const rx = newW / prevW;
+      const ry = newH / prevH;
+      krathongsRef.current.forEach(k => { k.x *= rx; k.y *= ry; });
+      particlesRef.current.forEach(p => { p.x *= rx; p.y *= ry; });
+
+      prevW = newW;
+      prevH = newH;
+      canvas.width = newW * dpr;
+      canvas.height = newH * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     };
     resize();

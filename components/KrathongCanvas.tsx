@@ -69,7 +69,7 @@ export function KrathongCanvas() {
   return (
     <div className="relative w-full h-screen bg-[#060318]">
       <canvas ref={canvasRef} className="w-full h-full" />
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md px-4">
+      <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-full max-w-lg px-3 sm:px-4">
         <KrathongForm onSubmit={handleSubmit} onFirework={handleFirework} />
       </div>
     </div>
