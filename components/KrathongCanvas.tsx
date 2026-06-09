@@ -15,8 +15,9 @@ export function KrathongCanvas() {
 
   const toLocal = useCallback((k: Krathong): KrathongLocal => {
     const canvas = canvasRef.current;
-    const w = canvas?.width ?? 800;
-    const h = canvas?.height ?? 500;
+    // ใช้ offsetWidth/offsetHeight (CSS pixels) ไม่ใช่ canvas.width (ที่ขยายตาม dpr แล้ว)
+    const w = canvas?.offsetWidth ?? 800;
+    const h = canvas?.offsetHeight ?? 500;
     return {
       ...k,
       x: k.x * w,
@@ -37,12 +38,12 @@ export function KrathongCanvas() {
 
   useCanvas(canvasRef, krathongsRef, particlesRef);
 
-  const handleSubmit = useCallback(async (name: string, message: string) => {
+  const handleSubmit = useCallback(async (name: string, message: string): Promise<boolean> => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return false;
     const x = 0.1 + Math.random() * 0.8;
     const y = 0.55 + Math.random() * 0.35;
-    await addKrathong({ name, message, color: myColor, x, y });
+    return addKrathong({ name, message, color: myColor, x, y });
   }, [addKrathong]);
 
   const handleFirework = useCallback(() => {

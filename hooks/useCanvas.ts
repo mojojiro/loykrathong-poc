@@ -16,8 +16,10 @@ export function useCanvas(
     const ctx = canvas.getContext('2d')!;
 
     const resize = () => {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvas.offsetWidth * dpr;
+      canvas.height = canvas.offsetHeight * dpr;
+      ctx.scale(dpr, dpr);
     };
     resize();
     window.addEventListener('resize', resize);

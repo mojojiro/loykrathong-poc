@@ -1,37 +1,62 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { Krathong } from '@/types/krathong';
 
 export function useRealtime(onNewKrathong: (k: Krathong) => void) {
+  const onNewKrathongRef = useRef(onNewKrathong);
+  onNewKrathongRef.current = onNewKrathong;
+
   useEffect(() => {
-    supabase
-      .from('krathongs')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .limit(50)
-      .then(({ data }) => {
-        data?.reverse().forEach(row => onNewKrathong(rowToKrathong(row)));
-      });
+    let destroyed = false;
+
+    const loadHistory = () => {
+      supabase
+        .from('krathongs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50)
+        .then(({ data }) => {
+          if (destroyed) return;
+          data?.reverse().forEach(row => onNewKrathongRef.current(rowToKrathong(row)));
+        });
+    };
+
+    loadHistory();
 
     const channel = supabase
       .channel('krathongs-realtime')
       .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'krathongs' },
-        (payload) => onNewKrathong(rowToKrathong(payload.new as Record<string, unknown>))
+        (payload) => {
+          if (destroyed) return;
+          onNewKrathongRef.current(rowToKrathong(payload.new as Record<string, unknown>));
+        }
       )
-      .subscribe();
+      .subscribe((status) => {
+        if (destroyed) return;
+        // reconnect เมื่อ channel ถูก closed โดยไม่ได้ตั้งใจ
+        if (status === 'CLOSED') {
+          setTimeout(() => {
+            if (!destroyed) supabase.removeChannel(channel);
+          }, 2000);
+        }
+      });
 
-    return () => { supabase.removeChannel(channel); };
-  }, [onNewKrathong]);
+    return () => {
+      destroyed = true;
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
-  const addKrathong = useCallback(async (k: Omit<Krathong, 'id' | 'createdAt'>) => {
-    await supabase.from('krathongs').insert([{
+  const addKrathong = useCallback(async (k: Omit<Krathong, 'id' | 'createdAt'>): Promise<boolean> => {
+    const { error } = await supabase.from('krathongs').insert([{
       name: k.name,
       message: k.message,
       color: k.color,
       x: k.x,
       y: k.y,
     }]);
+    return !error;
   }, []);
 
   return { addKrathong };
