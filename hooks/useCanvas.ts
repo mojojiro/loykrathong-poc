@@ -53,7 +53,7 @@ export function useCanvas(
         k.vx *= 0.996;
         if (k.x < -70) k.x = w + 70;
         if (k.x > w + 70) k.x = -70;
-        k.labelAlpha = Math.max(0, k.labelAlpha - 0.0015);
+        k.labelAlpha = Math.max(0, k.labelAlpha - 0.00833);
       });
 
       // sort by y แล้ว draw body — กระทง y สูง (อยู่หน้า) ทับกระทง y ต่ำ

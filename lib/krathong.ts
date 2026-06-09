@@ -106,16 +106,18 @@ export function drawKrathong(ctx: CanvasRenderingContext2D, k: KrathongLocal, wt
 
 export function drawKrathongLabel(ctx: CanvasRenderingContext2D, k: KrathongLocal) {
   if (k.labelAlpha <= 0.01) return;
+  // labelAlpha อาจ > 1 ระหว่าง hold period — clamp ให้ไม่เกิน 1
+  const alpha = Math.min(1, k.labelAlpha);
   const label = k.message ? `${k.name} · ${k.message}` : k.name;
   ctx.save();
   ctx.font = '500 12px sans-serif';
   const tw = ctx.measureText(label).width;
   const bw = tw + 16, bh = 22, bx = k.x - bw / 2, by = k.y - 52;
 
-  ctx.fillStyle = `rgba(10,18,40,${0.75 * k.labelAlpha})`;
+  ctx.fillStyle = `rgba(10,18,40,${0.75 * alpha})`;
   roundRect(ctx, bx, by, bw, bh, 6); ctx.fill();
 
-  ctx.fillStyle = `rgba(255,255,220,${k.labelAlpha})`;
+  ctx.fillStyle = `rgba(255,255,220,${alpha})`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(label, k.x, by + bh / 2);
   ctx.restore();
